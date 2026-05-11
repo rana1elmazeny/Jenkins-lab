@@ -22,7 +22,7 @@ pipeline {
             }
         }
 
-        stage('Use GitHub Secret') {
+        stage('Use Secret') {
             steps {
                 withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
                     sh 'echo "GitHub token loaded securely"'
