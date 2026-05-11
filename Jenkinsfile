@@ -2,36 +2,46 @@ pipeline {
     agent any
 
     stages {
+
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/ahmedsamyabdullah/service-app.git'
+                checkout scm
+            }
+        }
+
+        stage('Verify PHP') {
+            steps {
+                sh 'php -v'
+                sh 'phpunit --version'
             }
         }
 
         stage('Run Unit Tests') {
             steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh '/usr/local/bin/phpunit --log-junit results.xml tests/'
-                }
+                sh 'phpunit tests'
             }
         }
 
-        stage('Display Results') {
+        stage('Use GitHub Secret') {
             steps {
-                junit 'results.xml'
+                withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+                    sh 'echo "GitHub token loaded securely"'
+                }
             }
         }
     }
 
     post {
         always {
-            echo 'Pipeline job finished.'
+            echo 'Pipeline Finished'
         }
+
         success {
-            echo 'Congratulations! All tests passed successfully.'
+            echo 'All tests passed successfully'
         }
+
         failure {
-            echo 'The code failed the tests! Please check the Test Result trend for details.'
+            echo 'Tests failed'
         }
     }
 }
